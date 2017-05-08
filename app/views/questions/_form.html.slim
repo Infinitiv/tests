@@ -1,0 +1,12 @@
+= form_for @question do |f|
+  - if @question.errors.any?
+    ul
+      - @question.errors.full_messages.each do |msg|
+        li= msg
+  .row
+    .large-12.small-12.columns
+      .filefild
+      = f.label 'Загрузить файлы'
+      = f.file_field :files, name: 'question[files][]', id: :files, multiple: true
+  .actions
+    = f.submit 'Добавить', class: 'button tiny'

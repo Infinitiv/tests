@@ -55,3 +55,5 @@ gem 'roo'
 gem 'prawn'
 
 gem 'foundation-rails'
+
+gem 'slim'
