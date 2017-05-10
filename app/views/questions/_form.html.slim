@@ -5,7 +5,10 @@
         li= msg
   .row
     .large-12.small-12.columns
-      .filefild
+      = f.label 'Тэги'
+      = f.text_field :tags
+  .row
+    .large-12.small-12.columns
       = f.label 'Загрузить файлы'
       = f.file_field :files, name: 'question[files][]', id: :files, multiple: true
   .actions

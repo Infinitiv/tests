@@ -1,1 +1,3 @@
-li= link_to subject.title, subject
+li
+  = link_to subject do
+    - "#{subject.title} #{subject.questions.count}"

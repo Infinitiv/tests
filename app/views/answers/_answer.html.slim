@@ -1,1 +1,3 @@
-li= answer.text
+- answer.correct == 1 ? label_class = "success" : label_class = "secondary"
+li
+  span.label{class=label_class}= answer.text

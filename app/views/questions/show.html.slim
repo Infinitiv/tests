@@ -1,3 +1,9 @@
-h1= @question.text
-ol
-  = render partial: 'answers/answer', collection: @answers
+.card
+  .card-divider= @question.text
+  .
+    - @question.tags.each do |tag|
+      span.label.primary= tag
+      span &nbsp;
+  .card-section
+    ol
+      = render partial: 'answers/answer', collection: @answers

@@ -2,7 +2,7 @@ class SubjectsController < ApplicationController
   before_action :set_subject, only: [:show]
   
   def index
-    @subjects = Subject.order(:title).load
+    @subjects = Subject.order(:title).includes(:questions).load
   end
   
   def show

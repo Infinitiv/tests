@@ -4,25 +4,50 @@ class Question < ApplicationRecord
   
   validates :text, presence: true
   
-  def self.import(files)
+  def self.import(files, tags)
+    tags_custom = tags.split(',')
     files.each do |file|
-      subject = Subject.create(title: File.basename(file.original_filename, '.*'))
       if File.extname(file.original_filename) == ".txt"
-        lines = File.readlines(file.path)
+        subject = Subject.find_by_title(File.basename(file.original_filename, '.*').strip) || Subject.create(title: File.basename(file.original_filename, '.*').strip)
+        lines = File.readlines(file.path, encoding: 'cp1251')
         lines.each do |line|
           if line.first == "#"
-            question_create(line, subject)
+            text =  line.last(line.length - 1).strip
+            tags = tags_custom
+            tags +=  ['первичная аккредитация']
+            @question = Question.create(text: text, tags: tags)
+            @question.subjects << subject
           else
-            answer_create(line, @question)
+            correct = line.first == "+" ? 1 : 0
+            text = line.last(line.length - 1).strip
+            answer = @question.answers.create(text: text, correct: correct)
           end
         end
       else
         spreadsheet = open_spreadsheet(file)
-        (1..spreadsheet.last_row).each do |row|
-          if row[0] == 1
-            question_create(row[1], subject)
+        (1..spreadsheet.last_row).each do |i|
+          row = spreadsheet.row(i)
+          tags = tags_custom
+          unless row[0] == nil
+            case row[2]
+            when 1.to_s
+              tags += ['лечебное дело']
+            when 2.to_s
+              tags += ['педиатрия']
+            when 3.to_s
+              tags += ['стоматология']
+            else
+              tags += ['лечебное дело', 'педиатрия']
+            end
+            subject = Subject.find_by_title(row[0].strip) || Subject.create(title: row[0].strip)
+            text = row[1]
+            tags += ['итоговая государственная аттестация']
+            @question = Question.create(text: text, tags: tags)
+            @question.subjects << subject
           else
-            answer_create(row[1], @question)
+            correct = row[2] == 1.to_s ? 1 : 0
+            text = row[1]
+            answer = @question.answers.create(text: text, correct: correct)
           end
         end
       end
@@ -31,24 +56,6 @@ class Question < ApplicationRecord
   end
   
   private
-  
-  def self.question_create(text, subject)
-    if text.first == "#"
-      text =  text.last(text.length - 1).strip
-      tags = ['первичная аккредитация']
-    else
-      text.strip
-      tags = ['итоговая государственная аттестация']
-    end
-    @question = Question.create(text: text, tags: tags)
-    @question.subjects << subject
-  end
-  
-  def self.answer_create(text, question)
-    correct = text.first == "+" ? true : false
-    text = text.last(text.length - 1).strip
-    answer = question.answers.create(text: text, correct: correct)
-  end
   
   def self.open_spreadsheet(file)
     case File.extname(file.original_filename)

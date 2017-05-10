@@ -10,7 +10,7 @@ class QuestionsController < ApplicationController
   end
   
   def create
-    Question.import(question_params[:files])
+    Question.import(question_params[:files], question_params[:tags])
     redirect_to root_path
   end
   
@@ -21,6 +21,6 @@ class QuestionsController < ApplicationController
   end
   
   def question_params
-    params.require(:question).permit(files: [])
+    params.require(:question).permit(:tags, files: [])
   end
 end

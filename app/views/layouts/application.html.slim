@@ -12,5 +12,9 @@ html lang="en"
 
   body
     .row
-      .small-12.columns
+      .columns
+        .top-bar
+          .top-bar-left
+            ul.menu 
+              li= link_to 'Дисциплины', subjects_path
         == yield
