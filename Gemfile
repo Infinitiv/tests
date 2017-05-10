@@ -54,6 +54,8 @@ gem 'roo'
 
 gem 'prawn'
 
+gem 'prawn-table'
+
 gem 'foundation-rails'
 
 gem 'slim'
