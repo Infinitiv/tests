@@ -1,11 +1,13 @@
 namespace :tests do
   desc "Генерация тестов"
   task all: :environment do
-    specialites = ['лечебное дело', 'педиатрия']
+    specialites = ['педиатрия']
     specialites.each do |speciality|
       subjects = Subject.order(:title).joins(:questions).where("\'#{speciality}\' = ANY(tags)").uniq
       subjects.each do |subject|
+        %x{mkdir -p "public/all/#{speciality}"}
         title = "Тесты ГИА #{speciality} (#{subject.title})"
+        txt = File.open("public/all/#{[speciality, title].join("/")}.txt", "w", encoding: 'utf-16')
         pdf = Prawn::Document.new(page_size: "A4", :info => {
           :Title => title,
           :Author => "Vladimir Markovnin",
@@ -28,26 +30,31 @@ namespace :tests do
           n += 1
           puts "#{subject.title} - #{n}"
           pdf.text "%04d" % n + ". #{question.text}", style: :italic, size: 12
+          txt.write("\r\n\##{question.text}\r\n")
           pdf.move_down 10
           m = 0
           question.answers.order(:correct).reverse.each do |answer|
             m += 1
             pdf.text "#{m}. #{answer.text}", size: 12
+            answer.correct == 1 ? s = "+#{answer.text}\r\n" : s = "-#{answer.text}\r\n"
+            txt.write(s)
             pdf.move_down 10
           end
         end
         string = "Страница <page> из <total>"
         options = {:at => [pdf.bounds.right - 150, 0], :width => 150, :align => :center, :start_count_at => 1}
         pdf.number_pages string, options
-        pdf.render_file "public/#{title}.pdf"
+        pdf.render_file "public/all/#{[speciality, title].join("/")}.pdf"
+        txt.close
       end
     end
   end
   
   desc "Генерация вариантов"
   task sample: :environment do
-    specialites = ['лечебное дело', 'педиатрия']
+    specialites = ['лечебное дело', 'педиатрия', 'стоматология']
     specialites.each do |speciality|
+      %x{mkdir -p "public/sample/#{speciality}"}
       questions = Question.where("\'#{speciality}\' = ANY(tags)").uniq
       (1..10).each do |i|
         h = {}
@@ -130,7 +137,7 @@ namespace :tests do
         string = "Страница <page> из <total>"
         options = {:at => [pdf.bounds.right - 150, 0], :width => 150, :align => :center, :start_count_at => 1}
         pdf.number_pages string, options
-        pdf.render_file "public/#{title}.pdf"
+        pdf.render_file "public/sample/#{[speciality, title].join("/")}.pdf"
       end
     end
   end
